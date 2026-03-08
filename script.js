@@ -1,10 +1,9 @@
 // 1. PROTEÇÃO DE ROTA
-// Impede o acesso direto à página de consulta caso o usuário não tenha feito login
 if (!localStorage.getItem("loggedIn") && window.location.pathname.includes("consulta.html")) {
     window.location.href = "index.html";
 }
 
-// 2. BASE DE USUÁRIOS (Simulada para o projeto acadêmico)
+// 2. BASE DE USUÁRIOS
 const users = [
     { username: "alemaochefe", password: "alemao1234" },
     { username: "jzanoni", password: "180804" }
@@ -31,29 +30,28 @@ function logout() {
     window.location.href = "index.html";
 }
 
-// 4. VARIÁVEL GLOBAL PARA O HISTÓRICO DO PDF
+// 4. VARIÁVEL GLOBAL PARA O HISTÓRICO
 let todosResultadosPDF = [];
 
-// 5. BUSCA DE DADOS NAS TABELAS EXCEL (2020-2026)
+// 5. BUSCA DE DADOS (2020-2026)
 async function buscarDados() {
     const inscricao = document.getElementById('search').value.trim();
     if (!inscricao) {
-        alert("Por favor, digite uma inscrição municipal!");
+        alert("Por favor, informe o número da Inscrição Municipal!");
         return;
     }
 
     const anos = [2020, 2021, 2022, 2023, 2024, 2025, 2026];
     let resultados = [];
     
-    // Feedback visual de carregamento
     const tableBody = document.querySelector('#resultTable tbody');
-    tableBody.innerHTML = '<tr><td colspan="7">Processando histórico cadastral (2020-2026)...</td></tr>';
+    tableBody.innerHTML = '<tr><td colspan="7">Consultando base de dados histórica...</td></tr>';
 
     for (let ano of anos) {
         const url = `tabelas/${ano}.xlsx`;
         try {
             const response = await fetch(url);
-            if (!response.ok) continue; // Pula se o arquivo do ano específico não existir
+            if (!response.ok) continue;
 
             const data = await response.arrayBuffer();
             const workbook = XLSX.read(data, { type: 'array' });
@@ -61,7 +59,6 @@ async function buscarDados() {
             const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
             json.forEach(row => {
-                // Filtra pela inscrição municipal (Coluna 0 da tabela)
                 if (row[0] && row[0].toString().includes(inscricao)) {
                     resultados.push({
                         inscricao: row[0],
@@ -75,14 +72,13 @@ async function buscarDados() {
                 }
             });
         } catch (error) {
-            console.error(`Erro ao processar base de dados de ${ano}:`, error);
+            console.error(`Erro no processamento (Ano ${ano}):`, error);
         }
     }
-
     exibirResultados(resultados);
 }
 
-// 6. EXIBIÇÃO NA TELA E PREPARAÇÃO PARA PDF
+// 6. EXIBIÇÃO NA TELA
 function exibirResultados(resultados) {
     const tableBody = document.querySelector('#resultTable tbody');
     const btnPDF = document.getElementById('btnPDF');
@@ -95,7 +91,6 @@ function exibirResultados(resultados) {
         return;
     }
 
-    // Armazena os dados encontrados para a tabela do PDF
     todosResultadosPDF = resultados; 
     if(btnPDF) btnPDF.style.display = 'inline-block';
 
@@ -114,65 +109,65 @@ function exibirResultados(resultados) {
     });
 }
 
-// 7. GERAÇÃO DA CERTIDÃO NARRATIVA JURÍDICA EM PDF
+// 7. GERAÇÃO DA CERTIDÃO NARRATIVA ROBUSTA
 async function gerarPDF() {
     if (todosResultadosPDF.length === 0) return;
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    // Configuração de Cabeçalho Institucional
+    // Layout Institucional
     doc.setFont("times", "bold");
     doc.setFontSize(14);
-    doc.text("PREFEITURA MUNICIPAL", 105, 20, { align: "center" });
-    doc.setFontSize(11);
-    doc.text("PROJETO CERTIDÕES - SECRETARIA MUNICIPAL DA FAZENDA", 105, 27, { align: "center" });
+    doc.text("ESTADO DO PARANÁ", 105, 15, { align: "center" });
+    doc.text("PREFEITURA MUNICIPAL", 105, 22, { align: "center" });
     
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont("times", "normal");
     doc.text([
-        "Rua Teste, XX - Centro - CNPJ 11.111.111/0001-11",
-        "Telefone: (11) 1111-1111 | Atendimento ao Contribuinte"
-    ], 105, 33, { align: "center" });
+        "Secretaria Municipal da Fazenda e Gestão Pública",
+        "Divisão de Cadastro Imobiliário e Lançamentos",
+        "CNPJ 11.111.111/0001-11 | Tel: (43) 3333-3333"
+    ], 105, 30, { align: "center" });
     
-    doc.setLineWidth(0.5);
+    doc.setLineWidth(0.4);
     doc.line(20, 42, 190, 42);
 
-    // Título Jurídico-Administrativo
-    doc.setFontSize(13);
+    // Título do Documento
+    doc.setFontSize(12);
     doc.setFont("times", "bold");
-    doc.text("CERTIDÃO NARRATIVA DE HISTÓRICO CADASTRAL", 105, 55, { align: "center" });
+    doc.text("CERTIDÃO NARRATIVA TÉCNICA ADMINISTRATIVA № " + Math.floor(Date.now() / 1000), 105, 55, { align: "center" });
 
-    // Preâmbulo com Linguagem Formal
     const ultimoRegistro = todosResultadosPDF[todosResultadosPDF.length - 1];
     const isVago = ultimoRegistro.inscricao.toString().endsWith(".000");
     
     doc.setFontSize(11);
     doc.setFont("times", "normal");
     
-    let preambulo = `O MUNICÍPIO, através da Divisão de Cadastro Imobiliário, no uso de suas atribuições legais e em conformidade com os registros constantes no sistema de lançamentos tributários (IPTU), CERTIFICA para os devidos fins de direito que, após análise do histórico imobiliário referente à Inscrição Municipal nº ${ultimoRegistro.inscricao}, constatou-se a seguinte situação técnica:`;
+    // Narrativa Jurídica Detalhada
+    let textoNarrativo = `O MUNICÍPIO, no exercício de suas competências tributárias e administrativas, CERTIFICA para os devidos fins que, em consulta aos registros imobiliários consolidados, identificou-se que o imóvel sob a Inscrição Municipal nº ${ultimoRegistro.inscricao}, correspondente à Quadra ${ultimoRegistro.quadra} e Lote ${ultimoRegistro.lote}, apresenta a seguinte situação fática e jurídica:`;
 
-    const splitPreambulo = doc.splitTextToSize(preambulo, 170);
-    doc.text(splitPreambulo, 20, 70);
+    const splitTexto = doc.splitTextToSize(textoNarrativo, 170);
+    doc.text(splitTexto, 20, 70);
 
-    // Conclusão Técnica
-    let conclusaoTecnica = "";
+    // Parecer Técnico Baseado nos Dados Replicados
+    let parecer = "";
     if (isVago) {
-        conclusaoTecnica = `O referido imóvel caracteriza-se legalmente como TERRENO VAGO (sem edificações averbadas), apresentando área territorial de ${ultimoRegistro.metragem} m² no exercício atual.`;
+        parecer = `I - Constatou-se que o imóvel supracitado é classificado tecnicamente como TERRENO VAGO, inexistindo benfeitorias ou edificações averbadas junto ao cadastro municipal até o exercício de ${ultimoRegistro.ano}, possuindo área territorial total de ${ultimoRegistro.metragem} m².`;
     } else {
-        conclusaoTecnica = `O referido imóvel possui EDIFICAÇÃO CONSOLIDADA de utilização ${ultimoRegistro.utilizacao}, com estrutura em ${ultimoRegistro.estrutura}, totalizando ${ultimoRegistro.metragem} m² de área construída conforme o cadastro de ${ultimoRegistro.ano}.`;
+        parecer = `I - Constatou-se que o imóvel supracitado possui EDIFICAÇÃO CONSOLIDADA com destinação de utilização ${ultimoRegistro.utilizacao} e padrão estrutural de ${ultimoRegistro.estrutura}, totalizando área construída de ${ultimoRegistro.metragem} m², conforme dados cadastrais atualizados em ${ultimoRegistro.ano}.`;
     }
 
-    const splitConclusao = doc.splitTextToSize(conclusaoTecnica, 170);
-    doc.text(splitConclusao, 20, 95);
+    const splitParecer = doc.splitTextToSize(parecer, 170);
+    doc.text(splitParecer, 20, 90);
 
-    // Quadro de Histórico Automático (Plugin autoTable)
+    // Tabela Cronológica (Robustez do Histórico)
     doc.setFont("times", "bold");
-    doc.text("QUADRO DE EVOLUÇÃO CRONOLÓGICA (2020-2026):", 20, 115);
+    doc.text("II - QUADRO ANALÍTICO DE EVOLUÇÃO CADASTRAL (2020-2026):", 20, 115);
 
-    const headers = [["Inscrição", "Quadra", "Lote", "Ano", "Área (m²)", "Utilização", "Estrutura"]];
+    const headers = [["Inscrição", "Quadra", "Lote", "Ano", "Área", "Utilização", "Estrutura"]];
     const dataRows = todosResultadosPDF.map(res => [
-        res.inscricao, res.quadra, res.lote, res.ano, res.metragem, res.utilizacao, res.estrutura
+        res.inscricao, res.quadra, res.lote, res.ano, res.metragem + " m²", res.utilizacao, res.estrutura
     ]);
 
     doc.autoTable({
@@ -180,33 +175,29 @@ async function gerarPDF() {
         head: headers,
         body: dataRows,
         theme: 'grid',
-        headStyles: { fillGray: true, textColor: 20, fontStyle: 'bold' },
-        styles: { font: "times", fontSize: 9 },
+        headStyles: { fillGray: true, textColor: [0,0,0], fontStyle: 'bold', lineWidth: 0.1 },
+        styles: { font: "times", fontSize: 8, cellPadding: 2 },
         margin: { left: 20, right: 20 }
     });
 
-    // Encerramento e Assinatura
+    // Encerramento Formal
     const dataAtual = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
     const finalY = doc.lastAutoTable.finalY + 20;
 
-    doc.setFont("times", "normal");
-    doc.text(`O referido é verdade e dou fé.`, 20, finalY);
-    doc.text(`Documento gerado em, ${dataAtual}.`, 20, finalY + 10);
-
-    doc.line(70, finalY + 40, 140, finalY + 40);
     doc.setFontSize(10);
-    doc.text("Responsável pela Emissão", 105, finalY + 45, { align: "center" });
-    doc.text("Divisão de Cadastro Imobiliário", 105, finalY + 50, { align: "center" });
+    doc.text(`O referido é verdade e dou fé. Certidão emitida via sistema eletrônico.`, 20, finalY);
+    doc.text(`Londrina/PR, ${dataAtual}.`, 20, finalY + 8);
 
-    // Nome do arquivo gerado
+    // Bloco de Assinatura
+    doc.line(70, finalY + 35, 140, finalY + 35);
+    doc.setFont("times", "bold");
+    doc.text("Agente Administrativo Responsável", 105, finalY + 40, { align: "center" });
+    doc.setFont("times", "normal");
+    doc.text("Divisão de Cadastro e Lançamentos", 105, finalY + 45, { align: "center" });
+
     doc.save(`Certidao_Narrativa_${ultimoRegistro.inscricao}.pdf`);
 }
 
-// 8. INTERAÇÃO DO MANUAL (MODAL)
-document.getElementById("btnOrientacoes").addEventListener("click", () => {
-    document.getElementById("manual").classList.add("ativo");
-});
-
-document.getElementById("btnFechar").addEventListener("click", () => {
-    document.getElementById("manual").classList.remove("ativo");
-});
+// 8. INTERAÇÃO DO MODAL
+document.getElementById("btnOrientacoes").addEventListener("click", () => document.getElementById("manual").classList.add("ativo"));
+document.getElementById("btnFechar").addEventListener("click", () => document.getElementById("manual").classList.remove("ativo"));
