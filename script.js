@@ -131,7 +131,7 @@ async function gerarPDF() {
     doc.setFont("times", "normal");
     doc.text([
         "Secretaria Municipal da Fazenda",
-        "Divisão de Cadastro Imobiliário e Lançamentos",
+        "Divisão de Cadastro Imobiliário",
         "CNPJ 00.000.000/0000-00 | Tel: (43) 0000-0000"
     ], 105, 30, { align: "center" });
     
@@ -187,7 +187,7 @@ async function gerarPDF() {
 
     doc.setFontSize(10);
     doc.text(`O referido é verdade e dou fé. Certidão emitida via sistema eletrônico.`, 20, finalY);
-    doc.text(`Londrina/PR, ${dataAtual}.`, 20, finalY + 8);
+    doc.text(`Cambé/PR, ${dataAtual}.`, 20, finalY + 8);
 
     doc.line(70, finalY + 35, 140, finalY + 35);
     doc.setFont("times", "bold");
@@ -227,5 +227,4 @@ function limparConsulta() {
     campoBusca.focus();
     
     console.log("Consulta limpa. Sistema pronto para nova pesquisa.");
-
 }
