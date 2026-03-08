@@ -111,8 +111,12 @@ function exibirResultados(resultados) {
 
 // 7. GERAÇÃO DA CERTIDÃO NARRATIVA ROBUSTA
 async function gerarPDF() {
-    if (todosResultadosPDF.length === 0) return;
+    if (todosResultadosPDF.length === 0) {
+        alert("Não há dados para gerar o PDF.");
+        return;
+    }
 
+    // --- CORREÇÃO DA INSTÂNCIA ---
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
@@ -127,7 +131,7 @@ async function gerarPDF() {
     doc.text([
         "Secretaria Municipal da Fazenda e Gestão Pública",
         "Divisão de Cadastro Imobiliário e Lançamentos",
-        "CNPJ 11.111.111/0001-11 | Tel: (43) 3333-3333"
+        "CNPJ 00.000.000/0000-00 | Tel: (43) 0000-0000"
     ], 105, 30, { align: "center" });
     
     doc.setLineWidth(0.4);
@@ -136,7 +140,7 @@ async function gerarPDF() {
     // Título do Documento
     doc.setFontSize(12);
     doc.setFont("times", "bold");
-    doc.text("CERTIDÃO NARRATIVA TÉCNICA ADMINISTRATIVA № " + Math.floor(Date.now() / 1000), 105, 55, { align: "center" });
+    doc.text("CERTIDÃO NARRATIVA TÉCNICA ADMINISTRATIVA", 105, 55, { align: "center" });
 
     const ultimoRegistro = todosResultadosPDF[todosResultadosPDF.length - 1];
     const isVago = ultimoRegistro.inscricao.toString().endsWith(".000");
@@ -150,7 +154,7 @@ async function gerarPDF() {
     const splitTexto = doc.splitTextToSize(textoNarrativo, 170);
     doc.text(splitTexto, 20, 70);
 
-    // Parecer Técnico Baseado nos Dados Replicados
+    // Parecer Técnico
     let parecer = "";
     if (isVago) {
         parecer = `I - Constatou-se que o imóvel supracitado é classificado tecnicamente como TERRENO VAGO, inexistindo benfeitorias ou edificações averbadas junto ao cadastro municipal até o exercício de ${ultimoRegistro.ano}, possuindo área territorial total de ${ultimoRegistro.metragem} m².`;
@@ -161,7 +165,7 @@ async function gerarPDF() {
     const splitParecer = doc.splitTextToSize(parecer, 170);
     doc.text(splitParecer, 20, 90);
 
-    // Tabela Cronológica (Robustez do Histórico)
+    // Tabela Cronológica
     doc.setFont("times", "bold");
     doc.text("II - QUADRO ANALÍTICO DE EVOLUÇÃO CADASTRAL (2020-2026):", 20, 115);
 
@@ -170,6 +174,7 @@ async function gerarPDF() {
         res.inscricao, res.quadra, res.lote, res.ano, res.metragem + " m²", res.utilizacao, res.estrutura
     ]);
 
+    // O autoTable requer a biblioteca externa jspdf-autotable carregada no HTML
     doc.autoTable({
         startY: 120,
         head: headers,
@@ -195,9 +200,35 @@ async function gerarPDF() {
     doc.setFont("times", "normal");
     doc.text("Divisão de Cadastro e Lançamentos", 105, finalY + 45, { align: "center" });
 
+    // Salva o arquivo
     doc.save(`Certidao_Narrativa_${ultimoRegistro.inscricao}.pdf`);
 }
 
 // 8. INTERAÇÃO DO MODAL
 document.getElementById("btnOrientacoes").addEventListener("click", () => document.getElementById("manual").classList.add("ativo"));
 document.getElementById("btnFechar").addEventListener("click", () => document.getElementById("manual").classList.remove("ativo"));
+
+// 9. FUNÇÃO DO BOTÃO LIMPAR
+
+function limparConsulta() {
+    // 1. Limpa o campo de entrada (input de busca)
+    document.getElementById('search').value = "";
+
+    // 2. Limpa o corpo da tabela de resultados
+    const tableBody = document.querySelector('#resultTable tbody');
+    tableBody.innerHTML = "";
+
+    // 3. Esconde o botão de Gerar PDF
+    const btnPDF = document.getElementById('btnPDF');
+    if (btnPDF) {
+        btnPDF.style.display = 'none';
+    }
+
+    // 4. Limpa a variável global para garantir que o PDF não seja gerado com dados antigos
+    todosResultadosPDF = [];
+
+    // 5. Opcional: Coloca o foco do teclado de volta no campo de busca
+    document.getElementById('search').focus();
+    
+    console.log("Consulta limpa com sucesso.");
+}

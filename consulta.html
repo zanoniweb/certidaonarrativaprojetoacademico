@@ -23,13 +23,15 @@
     <label for="search">Inscrição Municipal:</label>
     <input type="text" id="search" placeholder="Digite a inscrição (ex: 01.083.120.0050.001)">
     
-    <button onclick="buscarDados()">Pesquisar</button> <!-- Correção da função -->
+    <button onclick="buscarDados()">Pesquisar</button> <!-- PESQUISAR -->
 
-    <button onclick="gerarPDF()" id="btnPDF" style="display:none; background-color: #2c3e50; color: white;">Gerar Certidão PDF</button>
+    <button onclick="limparConsulta()" style="background-color: #7f8c8d; color: white;">Limpar</button> <!-- Limpar -->
+
+    <button onclick="gerarPDF()" id="btnPDF" style="display:none; background-color: #2c3e50; color: white;">Gerar Certidão PDF</button> <!-- Gerar PDF -->
     
-    <button class="chat-button" id="btnOrientacoes">Orientações Chat</button>
+    <button class="chat-button" id="btnOrientacoes">Orientações Chat</button> <!-- ORIENTAÇÕES -->
     
-    <button onclick="logout()">Sair</button>
+    <button onclick="logout()">Sair</button> <!-- SAIR -->
 
     <h2>Resultado da Pesquisa</h2>
     <table id="resultTable">
