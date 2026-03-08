@@ -130,7 +130,7 @@ async function gerarPDF() {
     doc.setFontSize(10);
     doc.setFont("times", "normal");
     doc.text([
-        "Secretaria Municipal da Fazenda e Gestão Pública",
+        "Secretaria Municipal da Fazenda",
         "Divisão de Cadastro Imobiliário e Lançamentos",
         "CNPJ 00.000.000/0000-00 | Tel: (43) 0000-0000"
     ], 105, 30, { align: "center" });
@@ -227,4 +227,5 @@ function limparConsulta() {
     campoBusca.focus();
     
     console.log("Consulta limpa. Sistema pronto para nova pesquisa.");
+
 }
