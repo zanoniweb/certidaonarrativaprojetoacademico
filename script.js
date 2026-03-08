@@ -35,7 +35,9 @@ let todosResultadosPDF = [];
 
 // 5. BUSCA DE DADOS (2020-2026)
 async function buscarDados() {
-    const inscricao = document.getElementById('search').value.trim();
+    const campoBusca = document.getElementById('search');
+    const inscricao = campoBusca.value.trim();
+    
     if (!inscricao) {
         alert("Por favor, informe o número da Inscrição Municipal!");
         return;
@@ -116,7 +118,6 @@ async function gerarPDF() {
         return;
     }
 
-    // --- CORREÇÃO DA INSTÂNCIA ---
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
@@ -137,7 +138,7 @@ async function gerarPDF() {
     doc.setLineWidth(0.4);
     doc.line(20, 42, 190, 42);
 
-    // Título do Documento
+    // Título Ajustado (Sem número e sem exclamação)
     doc.setFontSize(12);
     doc.setFont("times", "bold");
     doc.text("CERTIDÃO NARRATIVA TÉCNICA ADMINISTRATIVA", 105, 55, { align: "center" });
@@ -148,13 +149,11 @@ async function gerarPDF() {
     doc.setFontSize(11);
     doc.setFont("times", "normal");
     
-    // Narrativa Jurídica Detalhada
     let textoNarrativo = `O MUNICÍPIO, no exercício de suas competências tributárias e administrativas, CERTIFICA para os devidos fins que, em consulta aos registros imobiliários consolidados, identificou-se que o imóvel sob a Inscrição Municipal nº ${ultimoRegistro.inscricao}, correspondente à Quadra ${ultimoRegistro.quadra} e Lote ${ultimoRegistro.lote}, apresenta a seguinte situação fática e jurídica:`;
 
     const splitTexto = doc.splitTextToSize(textoNarrativo, 170);
     doc.text(splitTexto, 20, 70);
 
-    // Parecer Técnico
     let parecer = "";
     if (isVago) {
         parecer = `I - Constatou-se que o imóvel supracitado é classificado tecnicamente como TERRENO VAGO, inexistindo benfeitorias ou edificações averbadas junto ao cadastro municipal até o exercício de ${ultimoRegistro.ano}, possuindo área territorial total de ${ultimoRegistro.metragem} m².`;
@@ -165,7 +164,6 @@ async function gerarPDF() {
     const splitParecer = doc.splitTextToSize(parecer, 170);
     doc.text(splitParecer, 20, 90);
 
-    // Tabela Cronológica
     doc.setFont("times", "bold");
     doc.text("II - QUADRO ANALÍTICO DE EVOLUÇÃO CADASTRAL (2020-2026):", 20, 115);
 
@@ -174,7 +172,6 @@ async function gerarPDF() {
         res.inscricao, res.quadra, res.lote, res.ano, res.metragem + " m²", res.utilizacao, res.estrutura
     ]);
 
-    // O autoTable requer a biblioteca externa jspdf-autotable carregada no HTML
     doc.autoTable({
         startY: 120,
         head: headers,
@@ -185,7 +182,6 @@ async function gerarPDF() {
         margin: { left: 20, right: 20 }
     });
 
-    // Encerramento Formal
     const dataAtual = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
     const finalY = doc.lastAutoTable.finalY + 20;
 
@@ -193,42 +189,42 @@ async function gerarPDF() {
     doc.text(`O referido é verdade e dou fé. Certidão emitida via sistema eletrônico.`, 20, finalY);
     doc.text(`Londrina/PR, ${dataAtual}.`, 20, finalY + 8);
 
-    // Bloco de Assinatura
     doc.line(70, finalY + 35, 140, finalY + 35);
     doc.setFont("times", "bold");
     doc.text("Agente Administrativo Responsável", 105, finalY + 40, { align: "center" });
     doc.setFont("times", "normal");
     doc.text("Divisão de Cadastro e Lançamentos", 105, finalY + 45, { align: "center" });
 
-    // Salva o arquivo
     doc.save(`Certidao_Narrativa_${ultimoRegistro.inscricao}.pdf`);
 }
 
-// 8. INTERAÇÃO DO MODAL
+// 8. INTERAÇÃO DO MODAL E EVENTOS DE TECLADO
 document.getElementById("btnOrientacoes").addEventListener("click", () => document.getElementById("manual").classList.add("ativo"));
 document.getElementById("btnFechar").addEventListener("click", () => document.getElementById("manual").classList.remove("ativo"));
 
-// 9. FUNÇÃO DO BOTÃO LIMPAR
+// Acionar pesquisa ao apertar a tecla "Enter" no campo de busca
+document.getElementById("search").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        buscarDados();
+    }
+});
 
+// 9. FUNÇÃO DO BOTÃO LIMPAR CORRIGIDA
 function limparConsulta() {
-    // 1. Limpa o campo de entrada (input de busca)
-    document.getElementById('search').value = "";
+    const campoBusca = document.getElementById('search');
+    campoBusca.value = "";
 
-    // 2. Limpa o corpo da tabela de resultados
     const tableBody = document.querySelector('#resultTable tbody');
     tableBody.innerHTML = "";
 
-    // 3. Esconde o botão de Gerar PDF
     const btnPDF = document.getElementById('btnPDF');
     if (btnPDF) {
         btnPDF.style.display = 'none';
     }
 
-    // 4. Limpa a variável global para garantir que o PDF não seja gerado com dados antigos
     todosResultadosPDF = [];
-
-    // 5. Opcional: Coloca o foco do teclado de volta no campo de busca
-    document.getElementById('search').focus();
+    campoBusca.focus();
     
-    console.log("Consulta limpa com sucesso.");
+    console.log("Consulta limpa. Sistema pronto para nova pesquisa.");
 }
