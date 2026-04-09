@@ -5,6 +5,7 @@ if (!localStorage.getItem("loggedIn") && window.location.pathname.includes("cons
 
 // 2. BASE DE USUÁRIOS
 const users = [
+    { username: "visianteadm", password: "adm1234" },
     { username: "alemaochefe", password: "alemao1234" },
     { username: "jzanoni", password: "180804" }
 ];
